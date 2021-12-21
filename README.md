@@ -1,9 +1,11 @@
 # MyFiveChess
 
-- [ ] UI
+- [x] UI
 - [ ] alpha-beta search
 - [ ] 启发式搜索
 - [ ] 评估函数
+- [ ] 跨平台
+- [ ] 多线程
 
 
 
