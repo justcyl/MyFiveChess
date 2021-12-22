@@ -16,7 +16,7 @@ using namespace std;
 
 
 #define GAP 49
-#define CHESS_SIZE 38
+#define CHESS_SIZE 41
 #define LUPOINT 32
 #define BG_SIZE 749
 
@@ -32,13 +32,14 @@ IMAGE BOARD;
 IMAGE WHITE_CHESS;
 IMAGE BLACK_CHESS;
 
+string rrow[15], lline[15], mdia[16], sdia[16];
 string Map;
 
 int isGameover = 0;
 
 int lastPos;
 void drawAlpha(IMAGE* picture, int  picture_x, int picture_y); //x为要载入图片的X坐标，y为Y坐标
-void init();
+void initGraph();
 void drawMap(int lastfill);
 int getClick();
 char xorColor(char ch);
@@ -48,17 +49,19 @@ int negmax(char color, int alpha, int beta, int depth);
 int getNextMove(int pos);
 void setAi_Color(int x);
 bool isappearFive(string s);
-string makeStr(int start, int hlen, int dir);
+int evaluateMdia(int x);
+int evaluateSdia(int x);
+void placeChess(int x, char ch);
+void initAI();
 
 struct Point {
 	int p, v;
-	bool end;
 
 	Point() { 
-		p = 0, v = 0, end = false;
+		p = 0, v = 0;
 	}
-	Point(int x, int y, bool z) {
-		p = x, v = y, end = z;
+	Point(int x, int y) {
+		p = x, v = y;
 	}
 
 	bool operator < (const Point& node) const {
@@ -67,19 +70,20 @@ struct Point {
 };
 
 int main() {
-	setAi_Color(1);
 	
+	initAI();
+	initGraph();
+
 	
-	init();
-	putimage(0, 0, &BOARD);
 	while (!isGameover) {
 
-		int player_fill = getClick();
+		int player_place = getClick();
 
-		Now_Score += evaluatePos(player_fill, xorColor(Ai_Color));
-		Map[player_fill] = xorColor(Ai_Color);
+		Fiveexist = false;
+		placeChess(player_place, xorColor(Ai_Color));
+		//Map[player_fill] = xorColor(Ai_Color);
 
-		drawMap(player_fill);
+		drawMap(player_place);
 
 		if (Fiveexist) {
 			isGameover = xorColor(Ai_Color) - '0';
@@ -87,12 +91,13 @@ int main() {
 		}
 
 		//Now_Score += evaluatePos(6, xorColor(Ai_Color));
-		int AI_fill = getNextMove(player_fill);
+		int AI_place = getNextMove(player_place);
 
-		Now_Score += evaluatePos(AI_fill, Ai_Color);
-		Map[AI_fill] = Ai_Color;
+		Fiveexist = false;
+		placeChess(AI_place, (Ai_Color));
+		//Map[AI_place] = Ai_Color;
 
-		drawMap(AI_fill);
+		drawMap(AI_place);
 
 		//printf("%d", AI_fill);
 		if (Fiveexist) {
@@ -115,7 +120,6 @@ int main() {
 	}*/
 	/*
 	{
-		Map.assign(255, '0');
 		int Player_fill = 10;
 
 		Now_Score += evaluatePos(Player_fill, xorColor(Ai_Color));
@@ -127,12 +131,22 @@ int main() {
 	}*/
 	return 0;
 }
+void initAI() {
+	Map.assign(255, '0');
+	setAi_Color(2);
 
+	for (int i = 0; i < 15; i++) lline[i].append(15, '0'), rrow[i].append(15, '0');
+	for (int i = 1; i < 16; i++) mdia[i].append(14, '0');
+	mdia[0].append(15, '0');
+
+	for (int i = 1; i < 14; i++) sdia[i].append(16, '0');
+	sdia[0].append(17, '0');
+}
 char xorColor(char ch){
 	if (ch == '0') return ch;
 	else return '3' - ch + '0';
 }
-void init() {
+void initGraph() {
 	initgraph(BG_SIZE, BG_SIZE);
 
 	loadimage(&BOARD, L"board.jpg", BG_SIZE, BG_SIZE);
@@ -146,7 +160,7 @@ void init() {
 	loadimage(&BLACK_CHESS, L"black_chess.png", CHESS_SIZE, CHESS_SIZE);
 	//drawAlpha(&BLACK_CHESS, CHESS_SIZE, CHESS_SIZE);
 
-	Map.assign(255, '0');
+	putimage(0, 0, &BOARD);
 
 }
 void drawMap(int lastfill) {
@@ -235,58 +249,37 @@ void drawAlpha(IMAGE* picture, int  picture_x, int picture_y) //x为载入图片
 int evaluateBoard();
 const int fx[] = {0, 1, 1, 1};
 const int fy[] = {1, 0, 1, -1};
-/*
+
 string stringtable[16] = 
 {"11111", "011110", "011100", "001110", "011010", "010110", "11110", "01111", "11011", "10111", "11101", "001100", "001010", "010100", "000100", "001000"};
 
 int scoretable[16] = 
 {50000, 4320, 720, 720, 720, 720, 720, 720, 720, 720, 720, 120, 120, 120, 20, 20};
-*/
-string stringtable[11] =
-{ "11111", "011110", "011100", "001110", "011010", "010110", "11110", "01111", "11011", "10111", "11101"};
 
-int scoretable[11] =
-{ 50000, 4320, 720, 720, 720, 720, 720, 720, 720, 720, 720};
 
 void setAi_Color(int x) {
 	Ai_Color = x + '0';
-	for (int i = 0; i < 11; i++) {
+	for (int i = 0; i < 16; i++) {
 		for (int j = 0; j < stringtable[i].size(); j++) {
 			if (stringtable[i][j] != '0') stringtable[i][j] = Ai_Color;
 		}
 	}
 }
-string makeStr(int start,int hlen,int dir) {
-	string patch = "";
-	int tx = start / 15, ty = start % 15;
-	for (int j = -hlen; j <= hlen; j++) {
-		int nx = tx + fx[dir] * j, ny = ty + fy[dir] * j;
-		if (nx < 0 || nx > 14) continue;
-		if (ny < 0 || ny > 14) continue;
 
-		patch.append(1, Map[nx * 15 + ny]);
-	}
-	return patch;
-}
  
 int evaluateBoard() {
-	int score = 0;
-	string t;
-
-	const int step[] = {15, 1, -16, 16};
-
-	for (int k = 0; k < 4; k++) {
-		for (int i = 0, j = 0; j < 15; i = (i + 225 + step[k]) % 225, j++) {
-			t = makeStr(i, 14, k);
-			score += evaluateStr(t);
-		}
-	}
-	return score;
+	int ans = 0;
+	for (int i = 0; i < 15; i++) ans += evaluateStr(lline[i]) + evaluateStr(rrow[i]);
+	for (int i = 0; i < 16; i++) ans += evaluateMdia(i);
+	for (int i = 0; i < 14; i++) ans += evaluateSdia(i);
+	return ans;
 }
 int evaluateStr(string s){
+	if (s.size() < 5) return 0;
+
 	int begin = -1;
 	int sum = 0;
-	for (int i = 0; i < 11; i++){
+	for (int i = 0; i < 16; i++){
 		int count = 0;
 		while((begin=s.find(stringtable[i], begin+1))!=string::npos){
 			count++;
@@ -297,7 +290,7 @@ int evaluateStr(string s){
 	
 	for (int j = 0; j < s.size(); j++) s[j] = xorColor(s[j]);
 
-	for (int i = 0; i < 11; i++) {
+	for (int i = 0; i < 16; i++) {
 		int count = 0;
 		while ((begin = s.find(stringtable[i], begin + 1)) != string::npos) {
 			count++;
@@ -311,30 +304,43 @@ int evaluateStr(string s){
 bool isappearFive(string s) {
 	return s.find(stringtable[0], 0) != string::npos;
 }
+int evaluateMdia(int x) {
+	if (x == 0 || x == 15) return evaluateStr(mdia[x]);
+	else return evaluateStr(mdia[x].substr(0, 15 - x)) + evaluateStr(mdia[x].substr(15 - x));
+}
+int evaluateSdia(int x) {
+	if (x == 0) return evaluateStr(sdia[x].substr(1, 15));
+	else return evaluateStr(sdia[x].substr(0, x)) + evaluateStr(sdia[x].substr(x));
+}
 int evaluatePos(int pos, char ch) {
-	Fiveexist = false;
+	int ans = 0;
+	char t;
 
-	int tx = pos / 15, ty = pos % 15;
-	int centre;
-	int delta = 0;
+	t = lline[pos / 15][pos % 15];
+	lline[pos / 15][pos % 15] = ch;
+	ans += evaluateStr(lline[pos / 15]);
+	lline[pos / 15][pos % 15] = t;
+	ans -= evaluateStr(lline[pos / 15]);
 
-	for (int k = 0; k < 4; k++){
-		string patch = "";
-		for (int j = -5; j <= 5; j++){
-			int nx = tx + fx[k] * j, ny = ty + fy[k] * j;
-			if (nx < 0 || nx > 14) continue;
-			if (ny < 0 || ny > 14) continue;
+	t = rrow[pos % 15][pos / 15];
+	rrow[pos % 15][pos / 15] = ch;
+	ans += evaluateStr(rrow[pos % 15]);
+	rrow[pos % 15][pos / 15] = t;
+	ans -= evaluateStr(rrow[pos % 15]);
 
-			patch.append(1, Map[nx * 15 + ny]);
+	t = mdia[pos % 16][pos / 16];
+	mdia[pos % 16][pos / 16] = ch;
+	ans += evaluateMdia(pos % 16);
+	mdia[pos % 16][pos / 16] = t;
+	ans -= evaluateMdia(pos % 16);
 
-			if (!j) centre = patch.size() - 1;
-		}
-		delta += -evaluateStr(patch);
-		patch[centre] = ch;
-		delta += +evaluateStr(patch);
+	t = sdia[pos % 14][pos / 14];
+	sdia[pos % 14][pos / 14] = ch;
+	ans += evaluateSdia(pos % 14);
+	sdia[pos % 14][pos / 14] = t;
+	ans -= evaluateSdia(pos % 14);
 
-	}
-	return delta;
+	return ans;
 }
 int negmax(char color, int alpha, int beta, int depth) {
 	if (depth == MAX_DEP) {
@@ -361,15 +367,25 @@ int negmax(char color, int alpha, int beta, int depth) {
 		if (js == 10) break;
 	}*/
 	//if (depth == 0)
+	/*
+	vector<Point> np;
 	for (int i = 0; i < 225; i++) {
 		if (Map[i] != '0') continue;
-		Map[i] = color;
+		int delta = -evaluatePos(i, color); //排序从大到小
+		Point anewPoint = Point(i, delta);
+		np.push_back(anewPoint);
+	}
+	sort(np.begin(), np.end());
+	*/
+	for (int i = 0; i < 225; i++) {
+		if (Map[i] != '0') continue;
+		placeChess(i, color);
 		int val = -negmax(xorColor(color), -beta, -alpha, depth + 1);
-		Map[i] = '0';
+		placeChess(i, '0');
 
 
 		if (val > alpha) {
-			lastPos = i;
+			if (depth == 0) lastPos = i;
 			if (val >= beta) {
 				return beta;
 			}
@@ -384,6 +400,15 @@ int getNextMove(int pos){
 	lastPos = 1;
 	int val = -negmax((Ai_Color), -INF, INF, 0);
 
-
 	return lastPos;
+}
+void placeChess(int x, char ch) {
+	Map[x] = ch;
+
+	Now_Score += evaluatePos(x, ch);
+
+	lline[x / 15][x % 15] = ch;
+	rrow[x % 15][x / 15] = ch;
+	mdia[x % 16][x / 16] = ch;
+	sdia[x % 14][x / 14] = ch;
 }
