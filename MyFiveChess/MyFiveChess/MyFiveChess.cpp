@@ -18,12 +18,13 @@ using namespace std;
 
 
 #define GAP 49
-#define CHESS_SIZE 43
+#define CHESS_SIZE 45
 #define LUPOINT 32
 #define BG_SIZE 749
 
-#define INF 247483647
+#define INF 50000
 #define MAX_DEP 6
+int MAX_TRY = 10;
 
 char Ai_Color = '1';
 
@@ -82,7 +83,7 @@ string stringtable[16] =
 { "11111", "011110", "011100", "001110", "011010", "010110", "11110", "01111", "11011", "10111", "11101", "001100", "001010", "010100", "000100", "001000" };
 
 int scoretable[16] =
-{ INF, 4320, 720, 720, 720, 720, 720, 720, 720, 720, 720, 120, 120, 120, 20, 20 };
+{ INF, 4320, 720, 720, 720, 720, 720, 720, 720, 720, 720, 120, 120, 120, 20, 20};
 
 int lastPos;
 inline void drawAlpha(IMAGE* picture, int  picture_x, int picture_y); //x为要载入图片的X坐标，y为Y坐标
@@ -125,26 +126,22 @@ private:
 PossiblePositionClass npp;
 
 int main() {
-	
-	initAI();
+
 	initGraph();
+	initAI();
 	
-	
-	isAifirst(false);
-	
-	
-	/*
-	int colorr = xorColor(Ai_Color);
-	char Map1[] = "000000000000000000000000000000000000000010000000000000002000000000000021200000000000101020000000002210100000000211112000000000112210000000000022020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
-	//Map1[143] = '0'; Map1[144] = '0'; Map1[146] = '0'; Map1[83] = '0'; Map1[40] = '0'; Map1[88] = '0';
-	for (int i = 0; i < 225; i++) {
-		if (Map1[i] == '0') continue;
-		placeChess(i, Map1[i]);
-		updateMap(i);
+	if (false) {
+		char map1[] = "020000000000000000000000000000000000000000000000000000000000000000000111000000000002100000010021221100000020101211200000021212111200000021212200000000122221000000000010222100000000002110200000000010000010000000000000000000000000000000000000000000000000000";
+		map1[getNum(Position(0, 1))] = '0'; map1[getNum(Position(4, 10))] = '0'; map1[getNum(Position(4, 11))] = '0'; map1[getNum(Position(6, 8))] = '0';
+		for (int i = 0; i < 225; i++) {
+			if (map1[i] == '0') continue;
+			int t = placeChess(i, map1[i]);
+			updateMap(i);
+		}
 	}
-	*/
 	
-		
+
+	int totSteps = 0;
 
 	while (!isGameover) {
 		int player_fill;
@@ -152,21 +149,25 @@ int main() {
 		int deltaScore = placeChess(player_fill, xorColor(Ai_Color));
 		updateMap(player_fill);
 
+		totSteps++;
 		if (deltaScore == -INF) {
 			isGameover = xorColor(Ai_Color) - '0';
 			break;
 		}
 		
 		int AI_fill = getNextMove(player_fill);
-		//int AI_fill = getClick();
 		deltaScore = placeChess(AI_fill, (Ai_Color));
 		updateMap(AI_fill);
 
-
+		totSteps++;
 		if (deltaScore ==  INF) {
 			isGameover = Ai_Color - '0';
 			break;
 		}
+		/*
+		if (totSteps > MAX_TRY) {
+			MAX_TRY += 10;
+		}*/
 	}
 	
 	
@@ -176,28 +177,10 @@ int main() {
 	closegraph();
 
 	cout << Map << endl;
-	/*
-	Map.assign(255, '0');
-	Map[0] = '1', Map[1] = '1', Map[2] = '1', Map[3] = '1';
-	Now_Score += evaluatePos(4, '1');
-	if (Fiveexist) {
-		printf("yes");
-	}*/
-	/*
-	{
-		int Player_fill = 10;
 
-		Now_Score += evaluatePos(Player_fill, xorColor(Ai_Color));
-		Map[Player_fill] = xorColor(Ai_Color);
-		int AI_fill = getNextMove(Player_fill);
-
-		Now_Score += evaluatePos(AI_fill, Ai_Color);
-		printf("%d\n", AI_fill);
-	}*/
 	return 0;
 }
 inline void isAifirst(bool b) {
-	setAi_Color(1);
 	if (!b) {
 		setAi_Color(2);
 		return;
@@ -275,6 +258,8 @@ inline void initAI() {
 
 	for (int i = 1; i < 14; i++) sdia[i].append(16, '0');
 	sdia[0].append(17, '0');
+
+	isAifirst(MessageBox(GetForegroundWindow(), L"您执黑？", L"新游戏", 1) - 1);
 }
 inline char xorColor(char ch){
 	if (ch == '0') return ch;
@@ -288,11 +273,9 @@ inline void initGraph() {
 
 
 	loadimage(&WHITE_CHESS, L"white_chess.png", CHESS_SIZE, CHESS_SIZE);
-	//drawAlpha(&WHITE_CHESS, CHESS_SIZE, CHESS_SIZE);
 
 
 	loadimage(&BLACK_CHESS, L"black_chess.png", CHESS_SIZE, CHESS_SIZE);
-	//drawAlpha(&BLACK_CHESS, CHESS_SIZE, CHESS_SIZE);
 
 	putimage(0, 0, &BOARD);
 
@@ -312,8 +295,8 @@ inline void drawMap(int lastfill) {
 			break;
 		}
 	}
-	setcolor(GREEN);
-	rectangle((lastfill % 15) * GAP + LUPOINT - CHESS_SIZE / 2 - 3, (lastfill / 15) * GAP + LUPOINT - CHESS_SIZE / 2 -3, (lastfill % 15) * GAP + LUPOINT + CHESS_SIZE / 2 + 3, (lastfill / 15) * GAP + LUPOINT + CHESS_SIZE / 2 + 3);
+	setcolor(0x00FF00);
+	rectangle((lastfill % 15) * GAP + LUPOINT - CHESS_SIZE / 2 - 2, (lastfill / 15) * GAP + LUPOINT - CHESS_SIZE / 2 - 2, (lastfill % 15) * GAP + LUPOINT + CHESS_SIZE / 2 + 2, (lastfill / 15) * GAP + LUPOINT + CHESS_SIZE / 2 + 2);
 
 	EndBatchDraw();
 }
@@ -380,7 +363,6 @@ inline void drawAlpha(IMAGE* picture, int  picture_x, int picture_y) //x为载�
 		}
 	}
 }
-
 
 inline void setAi_Color(int x) {
 	Ai_Color = x + '0';
@@ -525,7 +507,10 @@ inline int negmax(char color, int alpha, int beta, int depth) {
 	for (set<Position>::iterator iter = tmpPossiblePositions.begin(); iter != tmpPossiblePositions.end(); iter++) 
 	{
 		int t = evaluatePos(getNum(*iter), color) * (color == Ai_Color ? 1 : -1);
-		if (t == INF) {return t;}
+		if (t == INF) {
+			if (depth == 0) lastPos = getNum(*iter);
+			return t + MAX_DEP - depth;
+		}
 		PossiblePosition.insert(Position(iter->x, iter->y, t));
 	}
 
@@ -549,7 +534,7 @@ inline int negmax(char color, int alpha, int beta, int depth) {
 			}
 			alpha = val;
 		}
-		if (cnt++ > 10) {
+		if (cnt++ > MAX_TRY) {
 			break;
 		}
 	}
@@ -559,7 +544,7 @@ inline int negmax(char color, int alpha, int beta, int depth) {
 
 inline int getNextMove(int pos){
 	lastPos = 1;
-	int val = -negmax((Ai_Color), -INF+1, INF-1, 0);
+	int val = -negmax((Ai_Color), -INF - MAX_DEP - 1, INF + MAX_DEP + 1, 0);
 
 	return lastPos;
 }
@@ -579,48 +564,3 @@ void updateMap(int x) {
 	drawMap(x);
 	npp.AddPossiblePosition(getPos(x));
 }
-
-//int cnt = 0;
-	//Point* np = new Point[225];
-
-	/*vector<Position> np;
-	for (int i = 0; i < 225; i++) {
-		if (Map[i] != '0') continue;
-		int delta = -evaluatePos(i, color); //排序从大到小
-		Position anewPoint = getPos(i);
-		np.push_back(anewPoint);
-	}
-	sort(np.begin(), np.end());
-	/*int w = 1, js = 1;
-
-	while (w < np.size()) {
-		if (np[w - 1].v != np[w].v) js++;
-		w++;
-		if (js == 10) break;
-	}
-	//if (depth == 0)
-	/*
-	vector<Point> np;
-	for (int i = 0; i < 225; i++) {
-		if (Map[i] != '0') continue;
-		int delta = -evaluatePos(i, color); //排序从大到小
-		Point anewPoint = Point(i, delta);
-		np.push_back(anewPoint);
-	}
-	sort(np.begin(), np.end());
-	*/
-/*int totsteps = 1;
-	Position sr[15];
-	sr[1] = Position(8, 8);
-	sr[2] = Position(7, 6);
-	sr[3] = Position(6, 8);
-	sr[4] = Position(9, 7);
-	sr[5] = Position(6, 9);
-	sr[6] = Position(7, 11);
-	sr[7] = Position(8, 9);
-	sr[8] = Position(4, 10);
-	sr[9] = Position(4, 12);
-	sr[10] = Position(9, 10);
-	sr[11] = Position(3, 11);
-	sr[12] = Position(5, 13);
-	sr[13] = Position(9, 8);*/

@@ -1,0 +1,11 @@
+﻿  MyFiveChess.cpp
+C:\Users\cyl\Documents\PD_2021_A\c2021-1\实验\MyFiveChess\MyFiveChess\MyFiveChess\MyFiveChess.cpp(307,11): warning C4244: “初始化”: 从“double”转换到“int”，可能丢失数据
+C:\Users\cyl\Documents\PD_2021_A\c2021-1\实验\MyFiveChess\MyFiveChess\MyFiveChess\MyFiveChess.cpp(307,64): warning C4244: “初始化”: 从“double”转换到“int”，可能丢失数据
+C:\Users\cyl\Documents\PD_2021_A\c2021-1\实验\MyFiveChess\MyFiveChess\MyFiveChess\MyFiveChess.cpp(408,53): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
+C:\Users\cyl\Documents\PD_2021_A\c2021-1\实验\MyFiveChess\MyFiveChess\MyFiveChess\MyFiveChess.cpp(418,54): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
+  正在生成代码
+  1 of 667 functions ( 0.1%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    3 functions had inline decision re-evaluated but remain unchanged
+  已完成代码的生成
+  MyFiveChess.vcxproj -> C:\Users\cyl\Documents\PD_2021_A\c2021-1\实验\MyFiveChess\MyFiveChess\x64\Release\MyFiveChess.exe
