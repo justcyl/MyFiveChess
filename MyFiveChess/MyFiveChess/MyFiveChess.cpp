@@ -22,13 +22,10 @@ using namespace std;
 #define LUPOINT 32
 #define BG_SIZE 749
 
-#define INF 2147483647
-#define MAX_DEP 4
+#define INF 247483647
+#define MAX_DEP 6
 
 char Ai_Color = '1';
-
-int Now_Score = 0;
-bool Fiveexist;
 
 IMAGE BOARD;
 IMAGE WHITE_CHESS;
@@ -85,7 +82,7 @@ string stringtable[16] =
 { "11111", "011110", "011100", "001110", "011010", "010110", "11110", "01111", "11011", "10111", "11101", "001100", "001010", "010100", "000100", "001000" };
 
 int scoretable[16] =
-{ 50000, 4320, 720, 720, 720, 720, 720, 720, 720, 720, 720, 120, 120, 120, 20, 20 };
+{ INF, 4320, 720, 720, 720, 720, 720, 720, 720, 720, 720, 120, 120, 120, 20, 20 };
 
 int lastPos;
 inline void drawAlpha(IMAGE* picture, int  picture_x, int picture_y); //x为要载入图片的X坐标，y为Y坐标
@@ -101,15 +98,18 @@ inline void setAi_Color(int x);
 inline bool isappearFive(string s);
 inline int evaluateMdia(int x);
 inline int evaluateSdia(int x);
-inline void placeChess(int x, char ch);
+inline int placeChess(int x, char ch);
 inline void initAI();
 inline bool isInBoard(int x, int y);
 inline Position getPos(int x);
 inline int getNum(Position t);
-
+inline void updateMap(int x);
+inline int evaluateBoard();
+inline void isAifirst(bool b);
 const int nearX[] = { 0, 0, 1, 1, 1, -1, -1, -1};
 const int nearY[] = { 1, -1, 0, 1, -1, 0, 1, -1};
 
+map<string, int> existStr;
 
 class PossiblePositionClass
 {
@@ -128,49 +128,54 @@ int main() {
 	
 	initAI();
 	initGraph();
-
-	placeChess(112, (Ai_Color));
-	drawMap(112);
-	npp.AddPossiblePosition(getPos(112));
+	
+	
+	isAifirst(false);
+	
+	
+	/*
+	int colorr = xorColor(Ai_Color);
+	char Map1[] = "000000000000000000000000000000000000000010000000000000002000000000000021200000000000101020000000002210100000000211112000000000112210000000000022020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+	//Map1[143] = '0'; Map1[144] = '0'; Map1[146] = '0'; Map1[83] = '0'; Map1[40] = '0'; Map1[88] = '0';
+	for (int i = 0; i < 225; i++) {
+		if (Map1[i] == '0') continue;
+		placeChess(i, Map1[i]);
+		updateMap(i);
+	}
+	*/
+	
+		
 
 	while (!isGameover) {
+		int player_fill;
+		player_fill = getClick();
+		int deltaScore = placeChess(player_fill, xorColor(Ai_Color));
+		updateMap(player_fill);
 
-		int player_fill = getClick();
-
-		Fiveexist = false;
-		placeChess(player_fill, xorColor(Ai_Color));
-		//Map[player_fill] = xorColor(Ai_Color);
-
-		drawMap(player_fill);
-
-		if (Fiveexist) {
+		if (deltaScore == -INF) {
 			isGameover = xorColor(Ai_Color) - '0';
 			break;
 		}
-
-		npp.AddPossiblePosition(getPos(player_fill));
-		//Now_Score += evaluatePos(6, xorColor(Ai_Color));
+		
 		int AI_fill = getNextMove(player_fill);
+		//int AI_fill = getClick();
+		deltaScore = placeChess(AI_fill, (Ai_Color));
+		updateMap(AI_fill);
 
-		Fiveexist = false;
-		placeChess(AI_fill, (Ai_Color));
-		//Map[AI_place] = Ai_Color;
 
-		drawMap(AI_fill);
-
-		//printf("%d", AI_fill);
-		if (Fiveexist) {
+		if (deltaScore ==  INF) {
 			isGameover = Ai_Color - '0';
 			break;
 		}
-		npp.AddPossiblePosition(getPos(AI_fill));
 	}
 	
 	
 
 	if(isGameover == Ai_Color - '0') MessageBox(GetForegroundWindow(), L"Ai赢了", L"游戏结束", 1);
 	else  MessageBox(GetForegroundWindow(), L"人类赢了", L"游戏结束", 1);
-	
+	closegraph();
+
+	cout << Map << endl;
 	/*
 	Map.assign(255, '0');
 	Map[0] = '1', Map[1] = '1', Map[2] = '1', Map[3] = '1';
@@ -191,7 +196,18 @@ int main() {
 	}*/
 	return 0;
 }
-
+inline void isAifirst(bool b) {
+	setAi_Color(1);
+	if (!b) {
+		setAi_Color(2);
+		return;
+	}
+	else {
+		setAi_Color(1);
+		placeChess(112, (Ai_Color));
+		updateMap(112);
+	}
+}
 
 void PossiblePositionClass::AddPossiblePosition(const Position& pos) {
 	set<Position> addingPositions;
@@ -251,7 +267,7 @@ inline int getNum(Position t){
 }
 inline void initAI() {
 	Map.assign(255, '0');
-	setAi_Color(1);
+	
 
 	for (int i = 0; i < 15; i++) lline[i].append(15, '0'), rrow[i].append(15, '0');
 	for (int i = 1; i < 16; i++) mdia[i].append(14, '0');
@@ -364,7 +380,7 @@ inline void drawAlpha(IMAGE* picture, int  picture_x, int picture_y) //x为载�
 		}
 	}
 }
-inline int evaluateBoard();
+
 
 inline void setAi_Color(int x) {
 	Ai_Color = x + '0';
@@ -378,36 +394,66 @@ inline void setAi_Color(int x) {
  
 inline int evaluateBoard() {
 	int ans = 0;
-	for (int i = 0; i < 15; i++) ans += evaluateStr(lline[i]) + evaluateStr(rrow[i]);
-	for (int i = 0; i < 16; i++) ans += evaluateMdia(i);
-	for (int i = 0; i < 14; i++) ans += evaluateSdia(i);
+	for (int i = 0; i < 15; i++) {
+		int t = evaluateStr(lline[i]);
+		if (abs (t) == INF) return t;
+		else ans += t;
+	}
+	for (int i = 0; i < 15; i++) {
+		int t = evaluateStr(rrow[i]);
+		if (abs(t) == INF) return t;
+		else ans += t;
+	}
+	for (int i = 0; i < 16; i++) {
+		int t = evaluateMdia(i);
+		if (abs(t) == INF) return t;
+		else ans += t;
+	}	
+	for (int i = 0; i < 14; i++) {
+		int t = evaluateSdia(i);
+		if (abs(t) == INF) return t;
+		else ans += t;
+	}	
 	return ans;
 }
 inline int evaluateStr(string s){
 	if (s.size() < 5) return 0;
 
+	map<string, int>::iterator iter = existStr.find(s);
+	if (iter != existStr.end()) {
+		return iter->second;
+	}
+
 	int begin = -1;
 	int sum = 0;
-	for (int i = 0; i < 16; i++){
-		int count = 0;
-		while((begin=s.find(stringtable[i], begin+1))!=string::npos){
-			count++;
-        }
-		sum += count * scoretable[i];
-	}
-	if (isappearFive(s)) Fiveexist = true;
-	
-	for (int j = 0; j < s.size(); j++) s[j] = xorColor(s[j]);
 
-	for (int i = 0; i < 16; i++) {
-		int count = 0;
-		while ((begin = s.find(stringtable[i], begin + 1)) != string::npos) {
-			count++;
+	if (!isappearFive(s)) {
+		for (int i = 1; i < 16; i++) {
+			int count = 0;
+			while ((begin = s.find(stringtable[i], begin + 1)) != string::npos) {
+				count++;
+			}
+			sum += count * scoretable[i];
 		}
-		sum -= count * scoretable[i];
+		for (int j = 0; j < s.size(); j++) s[j] = xorColor(s[j]);
+
+		if (!isappearFive(s)) {
+			for (int i = 1; i < 16; i++) {
+				int count = 0;
+				while ((begin = s.find(stringtable[i], begin + 1)) != string::npos) {
+					count++;
+				}
+				sum -= count * scoretable[i];
+			}
+		}
+		else sum = -INF;
+
+		for (int j = 0; j < s.size(); j++) s[j] = xorColor(s[j]);
 	}
+	else sum = INF;
 	
-	if (isappearFive(s)) Fiveexist = true;
+	
+	existStr.insert(pair<string, int>(s, sum));
 	return sum;
 }
 inline bool isappearFive(string s) {
@@ -422,31 +468,47 @@ inline int evaluateSdia(int x) {
 	else return evaluateStr(sdia[x].substr(0, x)) + evaluateStr(sdia[x].substr(x));
 }
 inline int evaluatePos(int pos, char ch) {
-	int ans = 0;
-	char t;
+	int ans = 0, w;
 
-	t = lline[pos / 15][pos % 15];
 	lline[pos / 15][pos % 15] = ch;
-	ans += evaluateStr(lline[pos / 15]);
-	lline[pos / 15][pos % 15] = t;
+	w = evaluateStr(lline[pos / 15]);
+	if (abs(w) == INF) {
+		lline[pos / 15][pos % 15] = '0';
+		return w;
+	}
+	else ans += w;
+
+	lline[pos / 15][pos % 15] = '0';
 	ans -= evaluateStr(lline[pos / 15]);
 
-	t = rrow[pos % 15][pos / 15];
 	rrow[pos % 15][pos / 15] = ch;
-	ans += evaluateStr(rrow[pos % 15]);
-	rrow[pos % 15][pos / 15] = t;
+	w = evaluateStr(rrow[pos % 15]);
+	if (abs(w) == INF) {
+		rrow[pos % 15][pos / 15] = '0';
+		return w;
+	}
+	else ans += w;
+	rrow[pos % 15][pos / 15] = '0';
 	ans -= evaluateStr(rrow[pos % 15]);
 
-	t = mdia[pos % 16][pos / 16];
 	mdia[pos % 16][pos / 16] = ch;
-	ans += evaluateMdia(pos % 16);
-	mdia[pos % 16][pos / 16] = t;
+	w = evaluateMdia(pos % 16);
+	if (abs(w) == INF) {
+		mdia[pos % 16][pos / 16] = '0';
+		return w;
+	}
+	else ans += w;
+	mdia[pos % 16][pos / 16] = '0';
 	ans -= evaluateMdia(pos % 16);
 
-	t = sdia[pos % 14][pos / 14];
 	sdia[pos % 14][pos / 14] = ch;
-	ans += evaluateSdia(pos % 14);
-	sdia[pos % 14][pos / 14] = t;
+	w = evaluateSdia(pos % 14);
+	if (abs(w) == INF) {
+		sdia[pos % 14][pos / 14] = '0';
+		return w;
+	}
+	else ans += w;
+	sdia[pos % 14][pos / 14] = '0';
 	ans -= evaluateSdia(pos % 14);
 
 	return ans;
@@ -460,8 +522,11 @@ inline int negmax(char color, int alpha, int beta, int depth) {
 	set<Position> PossiblePosition;
 	const set<Position>& tmpPossiblePositions = npp.GetCurrentPossiblePositions();
 
-	for (set<Position>::iterator iter = tmpPossiblePositions.begin(); iter != tmpPossiblePositions.end(); iter++) {
-		PossiblePosition.insert(Position(iter->x, iter->y, evaluatePos(getNum(*iter), color)));
+	for (set<Position>::iterator iter = tmpPossiblePositions.begin(); iter != tmpPossiblePositions.end(); iter++) 
+	{
+		int t = evaluatePos(getNum(*iter), color) * (color == Ai_Color ? 1 : -1);
+		if (t == INF) {return t;}
+		PossiblePosition.insert(Position(iter->x, iter->y, t));
 	}
 
 	while(!PossiblePosition.empty()) {
@@ -484,7 +549,7 @@ inline int negmax(char color, int alpha, int beta, int depth) {
 			}
 			alpha = val;
 		}
-		if (cnt++ > 50) {
+		if (cnt++ > 10) {
 			break;
 		}
 	}
@@ -494,19 +559,25 @@ inline int negmax(char color, int alpha, int beta, int depth) {
 
 inline int getNextMove(int pos){
 	lastPos = 1;
-	int val = -negmax((Ai_Color), -INF, INF, 0);
+	int val = -negmax((Ai_Color), -INF+1, INF-1, 0);
 
 	return lastPos;
 }
-inline void placeChess(int x, char ch) {
+inline int placeChess(int x, char ch) {
 	Map[x] = ch;
 
-	Now_Score += evaluatePos(x, ch);
+	int t = evaluatePos(x, ch);
 
 	lline[x / 15][x % 15] = ch;
 	rrow[x % 15][x / 15] = ch;
 	mdia[x % 16][x / 16] = ch;
 	sdia[x % 14][x / 14] = ch;
+	
+	return t;
+}
+void updateMap(int x) {
+	drawMap(x);
+	npp.AddPossiblePosition(getPos(x));
 }
 
 //int cnt = 0;
@@ -538,3 +609,18 @@ inline void placeChess(int x, char ch) {
 	}
 	sort(np.begin(), np.end());
 	*/
+/*int totsteps = 1;
+	Position sr[15];
+	sr[1] = Position(8, 8);
+	sr[2] = Position(7, 6);
+	sr[3] = Position(6, 8);
+	sr[4] = Position(9, 7);
+	sr[5] = Position(6, 9);
+	sr[6] = Position(7, 11);
+	sr[7] = Position(8, 9);
+	sr[8] = Position(4, 10);
+	sr[9] = Position(4, 12);
+	sr[10] = Position(9, 10);
+	sr[11] = Position(3, 11);
+	sr[12] = Position(5, 13);
+	sr[13] = Position(9, 8);*/
