@@ -77,18 +77,18 @@ namespace UI {
 
 		string text;
 		if (steps == 0) {
-			outtextxy(BG_SIZE / 3 + 30, BG_SIZE + 20, L"Caculating......");
+			outtextxy(BG_SIZE / 3 + 50, BG_SIZE + 20, L"Caculating......");
 		}
 		else {
 
-			if (Ai_Color == '1') text = "AI first    steps:  ";
-			else text = "U first   steps:  ";
+			if (Ai_Color == '1') text = "AI first      Moves:  ";
+			else text = "U first     Moves:  ";
 
-			text += Myitoa(steps) + "   scores: " + Myitoa(lastVal) + "    time: " + Myitoa(lastTi) + " ms";
+			text += Myitoa(steps) + "    Scores: " + Myitoa(lastVal) + "    Time: " + Myitoa(lastTi) + " ms";
 			std::wstring wstr(text.begin(), text.end());
 
 			_TCHAR* Tstr = (_TCHAR*)(&wstr[0]);
-			outtextxy(BG_SIZE / 3 - 25, BG_SIZE + 20, Tstr);
+			outtextxy(BG_SIZE / 3 - 30, BG_SIZE + 20, Tstr);
 		}
 
 
@@ -161,7 +161,7 @@ namespace UI {
 	}
 	void gameOver(bool isAiwin) {
 		if (isAiwin) MessageBox(GetForegroundWindow(), L"Ai赢了", L"游戏结束", 1);
-		else  MessageBox(GetForegroundWindow(), L"人类赢了", L"游戏结束", 1);
+		else  MessageBox(GetForegroundWindow(), L"您赢了", L"游戏结束", 1);
 		closegraph();
 
 		//cout << Map << endl;

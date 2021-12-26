@@ -1,10 +1,14 @@
-﻿  UI.cpp
+﻿  AssessSystem.cpp
+C:\Users\cyl\Documents\PD_2021_A\c2021-1\实验\MyFiveChess\MyFiveChess\MyFiveChess\AssessSystem.cpp(90,53): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
+  MyFiveChess.cpp
+C:\Users\cyl\Documents\PD_2021_A\c2021-1\实验\MyFiveChess\MyFiveChess\MyFiveChess\MyFiveChess.cpp(29,19): warning C4244: “初始化”: 从“ULONGLONG”转换到“DWORD”，可能丢失数据
+C:\Users\cyl\Documents\PD_2021_A\c2021-1\实验\MyFiveChess\MyFiveChess\MyFiveChess\MyFiveChess.cpp(31,17): warning C4244: “初始化”: 从“ULONGLONG”转换到“DWORD”，可能丢失数据
+  UI.cpp
 C:\Users\cyl\Documents\PD_2021_A\c2021-1\实验\MyFiveChess\MyFiveChess\MyFiveChess\UI.cpp(62,4): warning C4145: “==”: 关系表达式用作 switch 表达式；可能和“=”混淆
 C:\Users\cyl\Documents\PD_2021_A\c2021-1\实验\MyFiveChess\MyFiveChess\MyFiveChess\UI.cpp(110,12): warning C4244: “初始化”: 从“double”转换到“int”，可能丢失数据
 C:\Users\cyl\Documents\PD_2021_A\c2021-1\实验\MyFiveChess\MyFiveChess\MyFiveChess\UI.cpp(110,65): warning C4244: “初始化”: 从“double”转换到“int”，可能丢失数据
   正在生成代码
-  11 of 602 functions ( 1.8%) were compiled, the rest were copied from previous compilation.
-    3 functions were new in current compilation
-    10 functions had inline decision re-evaluated but remain unchanged
+  Previous IPDB not found, fall back to full compilation.
+  All 602 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   已完成代码的生成
   MyFiveChess.vcxproj -> C:\Users\cyl\Documents\PD_2021_A\c2021-1\实验\MyFiveChess\MyFiveChess\x64\Release\MyFiveChess.exe

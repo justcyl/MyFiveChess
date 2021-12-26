@@ -5,20 +5,17 @@
 using namespace std;
 
 
-int MAX_TRY = 10;
+int MAX_TRY = 15;
 
-int winner = 0;
+int winner = 0, totSteps = 0;;
 
 int lastPos;
 
 AssessSystem::PossiblePositionClass npp;
 
 int main() {
-
 	UI::initGraph();
 	initAI();
-
-	int totSteps = 0;
 
 	while (!winner) {
 		int player_fill;
@@ -41,8 +38,6 @@ int main() {
 	
 	UI::gameOver(winner == 1);
 
-	
-
 	return 0;
 }
 void isAifirst(bool b) {
@@ -52,12 +47,14 @@ void isAifirst(bool b) {
 		return;
 	}
 	else {
+		totSteps = 1;
 		UI::setAicolor('1');
 		AssessSystem::updateBoard(112, ('1'));
 		updatePlaced(112, 1);
 	}
 }
 void initAI() {
+
 	isAifirst(MessageBox(GetForegroundWindow(), L"您执黑？", L"新游戏", 1) - 1);
 } 
 
@@ -103,11 +100,10 @@ int negmax(char color, int alpha, int beta, int depth) {
 			}
 			alpha = val;
 		}
-		if (cnt++ > MAX_TRY) {
+		if (++cnt > MAX_TRY) {
 			break;
 		}
 	}
-
 	return alpha;
 }
 

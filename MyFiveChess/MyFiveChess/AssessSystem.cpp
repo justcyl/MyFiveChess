@@ -116,57 +116,41 @@ namespace AssessSystem {
 
 
 		string l0[4];
+
+		char oldC = Map[x];
+		Map[x] = t;
+
 		for (int i = max(0, p.x - 5); i < min(15, p.x + 6); i++) {
-			if (i != p.x) {
-				l0[0].push_back(isRole(Map[i * 15 + p.y], role));
-			}
-			else {
-				l0[0].push_back(t);
-			}
+			l0[0].push_back(isRole(Map[i * 15 + p.y], role));
 		}
 		for (int j = max(0, p.y - 5); j < min(15, p.y + 6); j++) {
-			if (j != p.y) {
-				l0[1].push_back(isRole(Map[p.x * 15 + j], role));
-			}
-			else {
-				l0[1].push_back(t);
-			}
+			l0[1].push_back(isRole(Map[p.x * 15 + j], role));
 		}
 		for (int i = p.x - min(min(p.x, p.y), 5), j = p.y - min(min(p.x, p.y), 5); i < min(15, p.x + 6) && j < min(15, p.y + 6); i++, j++) {
-			if (i != p.x) {
-				l0[2].push_back(isRole(Map[i * 15 + j], role));
-			}
-			else {
-				l0[2].push_back(t);
-			}
+			l0[2].push_back(isRole(Map[i * 15 + j], role));
 		}
 		for (int i = p.x + min(min(p.y, 15 - 1 - p.x), 5), j = p.y - min(min(p.y, 15 - 1 - p.x), 5); i >= max(0, p.x - 5) && j < min(15, p.y + 6); i--, j++) {
-			if (i != p.x) {
-				l0[3].push_back(isRole(Map[i * 15 + j], role));
-			}
-			else {
-				l0[3].push_back(t);
-			}
+			l0[3].push_back(isRole(Map[i * 15 + j], role));
 		}
 		for (int i = 0; i < 4; i++) {
 			result += evaluateStr(l0[i]);
 		}
 
-
+		Map[x] = oldC;
 		return result;
 	}
 
 	int getValue(int x) {
-		return evaluatePos(x, '1', '1') + evaluatePos(x, '1', '2');
+		return evaluatePos(x, '1', '1') + evaluatePos(x, '2', '2');
 	}
 
 	void updateBoard(int x, char ch) {
-		int t1 = evaluatePos(x, isRole(ch, '1'), '1');
-		allScore[0] += t1 - evaluatePos(x, isRole(Map[x], '1'), '1');
+		int t1 = evaluatePos(x, ch, '1');
+		allScore[0] += t1 - evaluatePos(x, Map[x], '1');
 		//lastScore[0][x] = evaluatePos(x, ch, UI::getAicolor()) - evaluatePos(x, Map[x], UI::getAicolor());
 
-		int t2 = evaluatePos(x, isRole(ch, '2'), '2');
-		allScore[1] += t2 - evaluatePos(x, isRole(Map[x], '2'), '2');
+		int t2 = evaluatePos(x, ch, '2');
+		allScore[1] += t2 - evaluatePos(x, Map[x], '2');
 		//lastScore[1][x] = t2;
 
 		Map[x] = ch;
