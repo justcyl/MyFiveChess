@@ -2,6 +2,7 @@
 #include "UI.h"
 #include <string>
 #include <cstdio>
+
 using namespace std;
 
 const int GAP = 49;
@@ -15,14 +16,31 @@ IMAGE WHITE_CHESS;
 IMAGE BLACK_CHESS;
 
 namespace UI {
-	int lastVal;
+	int lastVal = 0, lastTi = 0;
 	Position lastPos;
 	char Ai_Color;
+	string Myitoa(int x) {
+		string str;
+		if (x < 0) str = "-", x = -x;
+		else str = "";
+
+		while (x) {
+			str += (x % 10) + '0';
+			x /= 10;
+		}
+		if (str[0] == '-') reverse(str.begin() + 1, str.end());
+		else reverse(str.begin(), str.end());
+		if (str == "") str = "0";
+		return str;
+	}
 	void initGraph() {
-		initgraph(BG_SIZE, BG_SIZE);
+		initgraph(BG_SIZE, BG_SIZE + 60);
 
 		loadimage(&BOARD, L"board.jpg", BG_SIZE, BG_SIZE);
 		putimage(0, 0, &BOARD);
+
+		setfillcolor(RGB(245, 222, 179));
+		solidrectangle(0, BG_SIZE, BG_SIZE, BG_SIZE + 60);
 
 
 		loadimage(&WHITE_CHESS, L"white_chess.png", CHESS_SIZE, CHESS_SIZE);
@@ -33,7 +51,7 @@ namespace UI {
 		putimage(0, 0, &BOARD);
 
 	}
-	void drawMap(string Map, int lastfill) {
+	void drawMap(string Map, int lastfill, int steps) {
 		BeginBatchDraw();
 		putimage(0, 0, &BOARD);
 		for (int i = 0; i < 225; i++) {
@@ -44,14 +62,37 @@ namespace UI {
 			{
 			case true:
 				drawAlpha(&BLACK_CHESS, py - CHESS_SIZE / 2, px - CHESS_SIZE / 2); break;
-			case false:
-				drawAlpha(&WHITE_CHESS, py - CHESS_SIZE / 2, px - CHESS_SIZE / 2); break;
 			default:
-				break;
+				drawAlpha(&WHITE_CHESS, py - CHESS_SIZE / 2, px - CHESS_SIZE / 2); break;
 			}
 		}
 		setcolor(0x00FF00);
 		rectangle((lastfill % 15) * GAP + LUPOINT - CHESS_SIZE / 2 - 2, (lastfill / 15) * GAP + LUPOINT - CHESS_SIZE / 2 - 2, (lastfill % 15) * GAP + LUPOINT + CHESS_SIZE / 2 + 2, (lastfill / 15) * GAP + LUPOINT + CHESS_SIZE / 2 + 2);
+
+		setfillcolor(RGB(245, 222, 179));
+		solidrectangle(0, BG_SIZE, BG_SIZE, BG_SIZE + 60);
+
+		setbkmode(TRANSPARENT);
+		settextcolor(BLACK);
+
+		string text;
+		if (steps == 0) {
+			outtextxy(BG_SIZE / 3 + 30, BG_SIZE + 20, L"Caculating......");
+		}
+		else {
+
+			if (Ai_Color == '1') text = "AI first    steps:  ";
+			else text = "U first   steps:  ";
+
+			text += Myitoa(steps) + "   scores: " + Myitoa(lastVal) + "    time: " + Myitoa(lastTi) + " ms";
+			std::wstring wstr(text.begin(), text.end());
+
+			_TCHAR* Tstr = (_TCHAR*)(&wstr[0]);
+			outtextxy(BG_SIZE / 3 - 25, BG_SIZE + 20, Tstr);
+		}
+
+
+		
 
 		EndBatchDraw();
 	}
@@ -140,7 +181,10 @@ namespace UI {
 	void setAicolor(char c) {
 		Ai_Color = c;
 	}
-	void printMessage(int val) {
+	void printVal(int val) {
 		lastVal = val;
+	}
+	void printTime(int ti) {
+		lastTi = ti;
 	}
 };

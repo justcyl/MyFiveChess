@@ -17,6 +17,14 @@
 
 using namespace std;
 
+int negmax(char color, int alpha, int beta, int depth);
+int getNextMove(int pos);
+
+void updatePlaced(int x, int steps);
+
+void initAI();
+void isAifirst(bool b);
+
 struct HistoryItem {
 	set<UI::Position> addedPosition;
 	UI::Position removedPosition;

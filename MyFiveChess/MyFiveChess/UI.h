@@ -6,6 +6,7 @@
 #include <windows.h>
 #include <string>
 
+
 using namespace std;
 
 namespace UI {
@@ -46,10 +47,12 @@ namespace UI {
 	void initGraph();
 	int getClick(string Map);
 	void drawAlpha(IMAGE* picture, int  picture_x, int picture_y); //x为要载入图片的X坐标，y为Y坐标
-	void drawMap(string Map, int lastfill);
+	void drawMap(string Map, int lastfill, int steps);
 	void gameOver(bool isAiwin);
 	int getNum(Position t);
 	char xorColor(char ch);
 	void setAicolor(char c);
-	void printMessage(int val);
+	void printVal(int val);
+	void printTime(int ti);
+	string Myitoa(int x);
 };

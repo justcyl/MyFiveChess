@@ -7,70 +7,36 @@ using namespace std;
 
 int MAX_TRY = 10;
 
-
-
 int winner = 0;
 
 int lastPos;
 
 AssessSystem::PossiblePositionClass npp;
 
-int negmax(char color, int alpha, int beta, int depth);
-int getNextMove(int pos);
-
-void updatePlaced(int x);
-
-void initAI();
-void isAifirst(bool b);
-
-
-/*
-void debug(bool b) {
-	if (!b) return;
-	char map1[] = "020000000000000000000000000000000000000000000000000000000000000000000111000000000002100000010021221100000020101211200000021212111200000021212200000000122221000000000010222100000000002110200000000010000010000000000000000000000000000000000000000000000000000";
-	map1[UI::getNum(UI::Position(0, 1))] = '0'; map1[UI::getNum(UI::Position(4, 10))] = '0'; map1[UI::getNum(UI::Position(4, 11))] = '0'; map1[UI::getNum(UI::Position(6, 8))] = '0';
-	for (int i = 0; i < 225; i++) {
-		if (map1[i] == '0') continue;
-		int t = placeChess(i, map1[i]);
-		updatePlaced(i);
-	}
-	AssessSystem::updateBoard(5, (UI::getAicolor()));
-	updatePlaced(5);
-	AssessSystem::updateBoard(6, (UI::getAicolor()));
-	updatePlaced(6);
-	AssessSystem::updateBoard(7, (UI::getAicolor()));
-	updatePlaced(7);
-} */
-
 int main() {
 
 	UI::initGraph();
 	initAI();
-	
-	
 
-	//int totSteps = 0;
-	//int deltaScore;
-
-	
+	int totSteps = 0;
 
 	while (!winner) {
 		int player_fill;
 		player_fill = UI::getClick(AssessSystem::getMap());
 		AssessSystem::updateBoard(player_fill, '2');
-		updatePlaced(player_fill);
+		totSteps++;
+		updatePlaced(player_fill, 0);
 
 		if (winner) break;
 
+		DWORD startTime = GetTickCount64();
 		int AI_fill = getNextMove(player_fill);
+		DWORD endTime = GetTickCount64();
+		UI::printTime(endTime - startTime);
 		AssessSystem::updateBoard(AI_fill, '1');
-		updatePlaced(AI_fill);
-
+		totSteps++;
+		if (winner != 2) updatePlaced(AI_fill, totSteps);
 		
-		/*
-		if (totSteps > MAX_TRY) {
-			MAX_TRY += 10;
-		}*/
 	}
 	
 	UI::gameOver(winner == 1);
@@ -88,7 +54,7 @@ void isAifirst(bool b) {
 	else {
 		UI::setAicolor('1');
 		AssessSystem::updateBoard(112, ('1'));
-		updatePlaced(112);
+		updatePlaced(112, 1);
 	}
 }
 void initAI() {
@@ -154,11 +120,11 @@ int getNextMove(int pos){
 	else if (val == -INF - MAX_DEP - 1) {
 		winner = 2;
 	}
-	UI::printMessage(val);
+	UI::printVal(val);
 	return lastPos;
 }
 
-void updatePlaced(int lastFill) {
-	UI::drawMap(AssessSystem::getMap(), lastFill);
+void updatePlaced(int lastFill, int steps) {
+	UI::drawMap(AssessSystem::getMap(), lastFill, steps);
 	npp.AddPossiblePosition(UI::getPos(lastFill));
 }
