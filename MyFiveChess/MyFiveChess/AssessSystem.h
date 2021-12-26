@@ -6,21 +6,18 @@ using namespace std;
 
 namespace AssessSystem {
 
-	bool isappearFive(string s);
-	int evaluateMdia(int x);
-	int evaluateSdia(int x);
-
-	int evaluateStr(string s);
-	int evaluatePos(int pos, char ch);
-	int evaluateBoard();
-	void initAssessSys(char Ai_color);
-	int updateScore(int x, char c);
-	
+	int evaluateStr(string str);
+	int getRoleColor(char c);
+	void updateBoard(int x, char ch);
+	char isRole(char x, char y);
+	int evaluatePoint(int x);
+	int getValue(int x);
+	string getMap();
 
 	class PossiblePositionClass
 	{
 	public:
-		void AddPossiblePosition(string Map,const UI::Position& pos);
+		void AddPossiblePosition(const UI::Position& pos);
 		void Rollback();
 		const set<UI::Position>& GetCurrentPossiblePositions();
 	private:

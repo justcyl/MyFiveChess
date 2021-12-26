@@ -1,12 +1,14 @@
 #include "AssessSystem.h"
 
 namespace AssessSystem {
+	string Map(255, '0');
 	string stringtable[16] =
 	{ "11111", "011110", "011100", "001110", "011010", "010110", "11110", "01111", "11011", "10111", "11101", "001100", "001010", "010100", "000100", "001000" };
 
 	int scoretable[16] =
-	{ INF, 4320, 720, 720, 720, 720, 720, 720, 720, 720, 720, 120, 120, 120, 20, 20 };
+	{ 50000, 4320, 720, 720, 720, 720, 720, 720, 720, 720, 720, 120, 120, 120, 20, 20 };
 
+	int  scores[2][72];
 
 	const int nearX[] = { 0, 0, 1, 1, 1, -1, -1, -1 };
 	const int nearY[] = { 1, -1, 0, 1, -1, 0, 1, -1 };
@@ -14,13 +16,13 @@ namespace AssessSystem {
 	const int fx[] = { 0, 1, 1, 1 };
 	const int fy[] = { 1, 0, 1, -1 };
 
-	int allscore[2];
+	int allScore[2];
 
-	string rrow[15], lline[15], mdia[16], sdia[16];
+	int lastScore[2][225] = {0};
 
 	map<string, int> existStr;
 
-	void PossiblePositionClass::AddPossiblePosition(string Map, const UI::Position& pos) {
+	void PossiblePositionClass::AddPossiblePosition(const UI::Position& pos) {
 		set<UI::Position> addingPositions;
 		for (int i = 0; i < 8; i++) {
 			if (!isInBoard(pos.x + nearX[i], pos.y + nearY[i])) {
@@ -70,6 +72,9 @@ namespace AssessSystem {
 		return (x >= 0 && x < 15 && y >= 0 && y < 15);
 	}
 	
+	string getMap() {
+		return Map;
+	}
 	int evaluateStr(string s) {
 		if (s.size() < 5) return 0;
 
@@ -81,139 +86,199 @@ namespace AssessSystem {
 		int begin = -1;
 		int sum = 0;
 
-		if (!isappearFive(s)) {
-			for (int i = 1; i < 16; i++) {
-				int count = 0;
-				while ((begin = s.find(stringtable[i], begin + 1)) != string::npos) {
-					count++;
-				}
-				sum += count * scoretable[i];
+		for (int i = 0; i < 16; i++) {
+			int count = 0;
+			while ((begin = s.find(stringtable[i], begin + 1)) != string::npos) {
+				count++;
 			}
-			for (int j = 0; j < s.size(); j++) s[j] = UI::xorColor(s[j]);
-
-			if (!isappearFive(s)) {
-				for (int i = 1; i < 16; i++) {
-					int count = 0;
-					while ((begin = s.find(stringtable[i], begin + 1)) != string::npos) {
-						count++;
-					}
-					sum -= count * scoretable[i];
-				}
-			}
-			else sum = -INF;
-
-			for (int j = 0; j < s.size(); j++) s[j] = UI::xorColor(s[j]);
+			sum += count * scoretable[i];
 		}
-		else sum = INF;
-
-
+			
 		existStr.insert(pair<string, int>(s, sum));
 		return sum;
 	}
-	bool isappearFive(string s) {
-		return s.find(stringtable[0], 0) != string::npos;
-	}
-	int evaluateMdia(int x) {
-		if (x == 0 || x == 15) return evaluateStr(mdia[x]);
-		else return evaluateStr(mdia[x].substr(0, 15 - x)) + evaluateStr(mdia[x].substr(15 - x));
-	}
-	int evaluateSdia(int x) {
-		if (x == 0) return evaluateStr(sdia[x].substr(1, 15));
-		else return evaluateStr(sdia[x].substr(0, x)) + evaluateStr(sdia[x].substr(x));
-	}
-	int evaluatePos(int pos, char ch) {
-		int ans = 0, w;
 
-		lline[pos / 15][pos % 15] = ch;
-		w = evaluateStr(lline[pos / 15]);
-		if (abs(w) == INF) {
-			lline[pos / 15][pos % 15] = '0';
-			return w;
-		}
-		else ans += w;
 
-		lline[pos / 15][pos % 15] = '0';
-		ans -= evaluateStr(lline[pos / 15]);
-
-		rrow[pos % 15][pos / 15] = ch;
-		w = evaluateStr(rrow[pos % 15]);
-		if (abs(w) == INF) {
-			rrow[pos % 15][pos / 15] = '0';
-			return w;
-		}
-		else ans += w;
-		rrow[pos % 15][pos / 15] = '0';
-		ans -= evaluateStr(rrow[pos % 15]);
-
-		mdia[pos % 16][pos / 16] = ch;
-		w = evaluateMdia(pos % 16);
-		if (abs(w) == INF) {
-			mdia[pos % 16][pos / 16] = '0';
-			return w;
-		}
-		else ans += w;
-		mdia[pos % 16][pos / 16] = '0';
-		ans -= evaluateMdia(pos % 16);
-
-		sdia[pos % 14][pos / 14] = ch;
-		w = evaluateSdia(pos % 14);
-		if (abs(w) == INF) {
-			sdia[pos % 14][pos / 14] = '0';
-			return w;
-		}
-		else ans += w;
-		sdia[pos % 14][pos / 14] = '0';
-		ans -= evaluateSdia(pos % 14);
-
-		return ans;
+	int getRoleColor(char c) {
+		if (c == '1') return allScore[0];
+		else return allScore[1];
 	}
 
-	int evaluateBoard() {
-		int ans = 0;
-		for (int i = 0; i < 15; i++) {
-			int t = evaluateStr(lline[i]);
-			if (abs(t) == INF) return t;
-			else ans += t;
+	char isRole(char x, char y) {
+		if (x == '0') {
+			return x;
 		}
-		for (int i = 0; i < 15; i++) {
-			int t = evaluateStr(rrow[i]);
-			if (abs(t) == INF) return t;
-			else ans += t;
-		}
-		for (int i = 0; i < 16; i++) {
-			int t = evaluateMdia(i);
-			if (abs(t) == INF) return t;
-			else ans += t;
-		}
-		for (int i = 0; i < 14; i++) {
-			int t = evaluateSdia(i);
-			if (abs(t) == INF) return t;
-			else ans += t;
-		}
-		return ans;
+		else return x == y ? '1' : '2';
 	}
-	void initAssessSys(char Ai_color) {
-		for (int i = 0; i < 15; i++) lline[i].append(15, '0'), rrow[i].append(15, '0');
-		for (int i = 1; i < 16; i++) mdia[i].append(14, '0');
-		mdia[0].append(15, '0');
 
-		for (int i = 1; i < 14; i++) sdia[i].append(16, '0');
-		sdia[0].append(17, '0');
+	int evaluatePoint(int x) {
+		int result;
+		int i, j;
+		int role;
 
-		for (int i = 0; i < 16; i++) {
-			for (int j = 0; j < stringtable[i].size(); j++) {
-				if (stringtable[i][j] != '0') stringtable[i][j] = Ai_color;
+		UI::Position p = UI::getPos(x);
+
+		result = 0;
+		role = '1';
+
+
+		string lines[4];
+		string lines1[4];
+		for (i = max(0, p.x - 5); i < min(15, p.x + 6); i++) {
+			if (i != p.x) {
+				lines[0].push_back(Map[i * 15 + p.y] == role ? '1' : Map[i * 15 + p.y] == '0' ? '0' : '2');
+				lines1[0].push_back(Map[i * 15 + p.y] == role ? '2' : Map[i * 15 + p.y] == '0' ? '0' : '1');
+			}
+			else {
+				lines[0].push_back('1');
+				lines1[0].push_back('1');
 			}
 		}
+		for (j = max(0, p.y - 5); j < min(15, p.y + 6); j++) {
+			if (j != p.y) {
+				lines[1].push_back(Map[p.x * 15 + j] == role ? '1' : Map[p.x * 15 + j] == '0' ? '0' : '2');
+				lines1[1].push_back(Map[p.x * 15 + j] == role ? '2' : Map[p.x * 15 + j] == '0' ? '0' : '1');
+			}
+			else {
+				lines[1].push_back('1');
+				lines1[1].push_back('1');
+			}
+		}
+		for (i = p.x - min(min(p.x, p.y), 5), j = p.y - min(min(p.x, p.y), 5); i < min(15, p.x + 6) && j < min(15, p.y + 6); i++, j++) {
+			if (i != p.x) {
+				lines[2].push_back(Map[i * 15 + j] == role ? '1' : Map[i * 15 + j] == '0' ? '0' : '2');
+				lines1[2].push_back(Map[i * 15 + j] == role ? '2' : Map[i * 15 + j] == '0' ? '0' : '1');
+			}
+			else {
+				lines[2].push_back('1');
+				lines1[2].push_back('1');
+			}
+		}
+		for (i = p.x + min(min(p.y, 15 - 1 - p.x), 5), j = p.y - min(min(p.y, 15 - 1 - p.x), 5); i >= max(0, p.x - 5) && j < min(15, p.y + 6); i--, j++) {
+			if (i != p.x) {
+				lines[3].push_back(Map[i * 15 + j] == role ? '1' : Map[i * 15 + j] == '0' ? '0' : '2');
+				lines1[3].push_back(Map[i * 15 + j] == role ? '2' : Map[i * 15 + j] == '0' ? '0' : '1');
+			}
+			else {
+				lines[3].push_back('1');
+				lines1[3].push_back('1');
+			}
+		}
+
+		for (i = 0; i < 4; i++) {
+			result += evaluateStr(lines[i]) + evaluateStr(lines1[i]);
+		}
+
+		return result;
 	}
 
-	int updateScore(int x, char ch) {
-		int t = evaluatePos(x, ch);
-		lline[x / 15][x % 15] = ch;
-		rrow[x % 15][x / 15] = ch;
-		mdia[x % 16][x / 16] = ch;
-		sdia[x % 14][x / 14] = ch;
+	int getValue(int x) {
+		return evaluatePoint(x);
+	}
 
-		return t;
+	void updateBoard(int x, char ch) {
+		string lines[4];
+		string lines1[4];
+		int i, j;
+		char role = '1';
+
+		UI::Position p = UI::getPos(x);
+
+
+		Map[x] = ch;
+
+
+		//竖
+		for (i = 0; i < 15; i++) {
+
+			lines[0].push_back(Map[i * 15 + p.y] == role ? '1' : Map[i * 15 + p.y] == '0' ? '0' : '2');
+			lines1[0].push_back(Map[i * 15 + p.y] == role ? '2' : Map[i * 15 + p.y] == '0' ? '0' : '1');
+
+
+		}
+		//横
+		for (i = 0; i < 15; i++) {
+
+			lines[1].push_back(Map[p.x * 15 + i] == role ? '1' : Map[p.x * 15 + i] == '0' ? '0' : '2');
+			lines1[1].push_back(Map[p.x * 15 + i] == role ? '2' : Map[p.x * 15 + i] == '0' ? '0' : '1');
+
+		}
+		//反斜杠
+		for (i = p.x - min(p.x, p.y), j = p.y - min(p.x, p.y); i < 15 && j < 15; i++, j++) {
+
+			lines[2].push_back(Map[i * 15 + j] == role ? '1' : Map[i * 15 + j] == '0' ? '0' : '2');
+			lines1[2].push_back(Map[i * 15 + j] == role ? '2' : Map[i * 15 + j] == '0' ? '0' : '1');
+
+		}
+		//斜杠
+		for (i = p.x + min(p.y, 15 - 1 - p.x), j = p.y - min(p.y, 15 - 1 - p.x); i >= 0 && j < 15; i--, j++) {
+
+			lines[3].push_back(Map[i * 15 + j] == role ? '1' : Map[i * 15 + j] == '0' ? '0' : '2');
+			lines1[3].push_back(Map[i * 15 + j] == role ? '2' : Map[i * 15 + j] == '0' ? '0' : '1');
+
+		}
+
+		int lineScore[4];
+		int line1Score[4];
+		memset(lineScore, 0, sizeof(lineScore));
+		memset(line1Score, 0, sizeof(line1Score));
+
+		//计算分数
+		for (i = 0; i < 4; i++) {
+			lineScore[i] += evaluateStr(lines[i]);
+			line1Score[i] += evaluateStr(lines1[i]);
+		}
+
+		int a = p.y;
+		int b = 15 + p.x;
+		int c = 2 * 15 + (p.y - p.x + 10);
+		int d = 2 * 15 + 21 + (p.x + p.y - 4);
+		//减去以前的记录
+		for (i = 0; i < 2; i++) {
+			allScore[i] -= scores[i][a];
+			allScore[i] -= scores[i][b];
+		}
+
+		//scores顺序 竖、横、\、/
+		scores[0][a] = lineScore[0];
+		scores[1][a] = line1Score[0];
+		scores[0][b] = lineScore[1];
+		scores[1][b] = line1Score[1];
+
+
+		//加上新的记录
+		for (i = 0; i < 2; i++) {
+			allScore[i] += scores[i][a];
+			allScore[i] += scores[i][b];
+		}
+
+		if (p.y - p.x >= -10 && p.y - p.x <= 10) {
+
+			for (i = 0; i < 2; i++)
+				allScore[i] -= scores[i][c];
+
+
+			scores[0][c] = lineScore[2];
+			scores[1][c] = line1Score[2];
+
+			for (i = 0; i < 2; i++)
+				allScore[i] += scores[i][c];
+
+		}
+
+		if (p.x + p.y >= 4 && p.x + p.y <= 24) {
+
+			for (i = 0; i < 2; i++)
+				allScore[i] -= scores[i][d];
+
+			scores[0][d] = lineScore[3];
+			scores[1][d] = line1Score[3];
+
+			for (i = 0; i < 2; i++)
+				allScore[i] += scores[i][d];
+		}
+
+		
+		
 	}
 };

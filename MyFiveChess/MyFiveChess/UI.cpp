@@ -15,6 +15,9 @@ IMAGE WHITE_CHESS;
 IMAGE BLACK_CHESS;
 
 namespace UI {
+	int lastVal;
+	Position lastPos;
+	char Ai_Color;
 	void initGraph() {
 		initgraph(BG_SIZE, BG_SIZE);
 
@@ -34,12 +37,14 @@ namespace UI {
 		BeginBatchDraw();
 		putimage(0, 0, &BOARD);
 		for (int i = 0; i < 225; i++) {
+			if (Map[i] == '0') continue;
 			int px = (i / 15) * GAP + LUPOINT, py = (i % 15) * GAP + LUPOINT;
-			switch (Map[i])
+			char t = Ai_Color;
+			switch (Map[i] == t)
 			{
-			case'1':
+			case true:
 				drawAlpha(&BLACK_CHESS, py - CHESS_SIZE / 2, px - CHESS_SIZE / 2); break;
-			case'2':
+			case false:
 				drawAlpha(&WHITE_CHESS, py - CHESS_SIZE / 2, px - CHESS_SIZE / 2); break;
 			default:
 				break;
@@ -130,5 +135,12 @@ namespace UI {
 	char xorColor(char ch) {
 		if (ch == '0') return ch;
 		else return '3' - ch + '0';
+	}
+
+	void setAicolor(char c) {
+		Ai_Color = c;
+	}
+	void printMessage(int val) {
+		lastVal = val;
 	}
 };

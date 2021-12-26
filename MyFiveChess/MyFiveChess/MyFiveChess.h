@@ -12,8 +12,8 @@
 #include <map>
 #include <set>
 #include "UI.h"
-#define INF 500000000
-#define MAX_DEP 6
+#define INF 50000000
+#define MAX_DEP 7
 
 using namespace std;
 

@@ -11,26 +11,26 @@ using namespace std;
 namespace UI {
 	typedef struct Position {
 		int x, y;
-		int score;
+		int value;
 
 		Position() {
 			this->x = 0;
 			this->y = 0;
-			score = 0;
+			value = 0;
 		}
 		Position(int x, int y) {
 			this->x = x;
 			this->y = y;
-			score = 0;
+			value = 0;
 		}
-		Position(int x, int y, int score) {
+		Position(int x, int y, int value) {
 			this->x = x;
 			this->y = y;
-			this->score = score;
+			this->value = value;
 		}
 		bool operator <(const Position& pos) const {
-			if (score != pos.score) {
-				return score > pos.score;
+			if (value != pos.value) {
+				return value > pos.value;
 			}
 			if (x != pos.x) {
 				return x < pos.x;
@@ -50,4 +50,6 @@ namespace UI {
 	void gameOver(bool isAiwin);
 	int getNum(Position t);
 	char xorColor(char ch);
+	void setAicolor(char c);
+	void printMessage(int val);
 };
