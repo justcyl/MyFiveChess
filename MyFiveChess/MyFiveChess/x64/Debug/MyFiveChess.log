@@ -1,5 +1,3 @@
 ﻿  AssessSystem.cpp
-C:\Users\cyl\Documents\PD_2021_A\c2021-1\实验\MyFiveChess\MyFiveChess\MyFiveChess\AssessSystem.cpp(91,53): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
-  MyFiveChess.cpp
-  正在生成代码...
+C:\Users\cyl\Documents\PD_2021_A\c2021-1\实验\MyFiveChess\MyFiveChess\MyFiveChess\AssessSystem.cpp(151,54): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
   MyFiveChess.vcxproj -> C:\Users\cyl\Documents\PD_2021_A\c2021-1\实验\MyFiveChess\MyFiveChess\x64\Debug\MyFiveChess.exe

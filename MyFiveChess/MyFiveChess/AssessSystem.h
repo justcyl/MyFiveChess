@@ -25,7 +25,7 @@ namespace AssessSystem {
 		vector<HistoryItem> history;
 
 	};
-	
+	void dfsStr(string s);
 	bool isInBoard(int x, int y);
 
 };

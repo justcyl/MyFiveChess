@@ -4,8 +4,8 @@
 
 using namespace std;
 
-
-int MAX_TRY = 15;
+int MAX_DEP = 7;
+int MAX_TRY = 10;
 
 int winner = 0, totSteps = 0;;
 
@@ -14,8 +14,11 @@ int lastPos;
 AssessSystem::PossiblePositionClass npp;
 
 int main() {
-	UI::initGraph();
+	printf("Powered by cyl.\n");
+	printf("Initializating...");
+
 	initAI();
+	UI::initGraph();
 
 	while (!winner) {
 		int player_fill;
@@ -53,17 +56,32 @@ void isAifirst(bool b) {
 		updatePlaced(112, 1);
 	}
 }
+void setlevel(int x) {
+	switch (x)
+	{
+	case 1:
+		MAX_DEP = 4; break;
+	case 2:
+		MAX_DEP = 7; break;
+	default:
+		break;
+	}
+}
 void initAI() {
-
+	AssessSystem::dfsStr("");
 	isAifirst(MessageBox(GetForegroundWindow(), L"您执黑？", L"新游戏", 1) - 1);
+	setlevel(MessageBox(GetForegroundWindow(), L"简单难度？", L"难度设置", 1));
 } 
 
 int negmax(char color, int alpha, int beta, int depth) {
 	if (AssessSystem::getRoleColor(color) >= 50000) {
-		return INF + MAX_DEP - (depth)+1;
+		return INF + MAX_DEP - (depth) + 1;
 	}
 	if (AssessSystem::getRoleColor(UI::xorColor(color)) >= 50000) {
-		return -INF - MAX_DEP + (depth)-1;
+		return -INF - MAX_DEP + (depth) - 1;
+	}
+	if (alpha > INF + MAX_DEP - (depth) ) {
+		return alpha;
 	}
 	if (depth == MAX_DEP) {
 		return AssessSystem::getRoleColor(color) - AssessSystem::getRoleColor(UI::xorColor(color));

@@ -163,7 +163,7 @@ namespace UI {
 		if (isAiwin) MessageBox(GetForegroundWindow(), L"Ai赢了", L"游戏结束", 1);
 		else  MessageBox(GetForegroundWindow(), L"您赢了", L"游戏结束", 1);
 		closegraph();
-
+		system("cls");
 		//cout << Map << endl;
 	}
 	int getNum(Position t) {

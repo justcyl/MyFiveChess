@@ -13,7 +13,7 @@
 #include <set>
 #include "UI.h"
 #define INF 50000000
-#define MAX_DEP 7
+
 
 using namespace std;
 
@@ -23,6 +23,7 @@ int getNextMove(int pos);
 void updatePlaced(int x, int steps);
 
 void initAI();
+void setlevel(int x);
 void isAifirst(bool b);
 
 struct HistoryItem {

@@ -78,23 +78,8 @@ namespace AssessSystem {
 		if (s.size() < 5) return 0;
 
 		map<string, int>::iterator iter = existStr.find(s);
-		if (iter != existStr.end()) {
-			return iter->second;
-		}
-
-		int begin = -1;
-		int sum = 0;
-
-		for (int i = 0; i < 16; i++) {
-			int count = 0;
-			while ((begin = s.find(stringtable[i], begin + 1)) != string::npos) {
-				count++;
-			}
-			sum += count * scoretable[i];
-		}
-			
-		existStr.insert(pair<string, int>(s, sum));
-		return sum;
+		
+		return iter->second;
 	}
 
 
@@ -154,5 +139,28 @@ namespace AssessSystem {
 		//lastScore[1][x] = t2;
 
 		Map[x] = ch;
+	}
+	void dfsStr(string s) {
+		if (s.size() > 11) return;
+		if (s.size() > 4) {
+			int begin = -1;
+			int sum = 0;
+
+			for (int i = 0; i < 16; i++) {
+				int count = 0;
+				while ((begin = s.find(stringtable[i], begin + 1)) != string::npos) {
+					count++;
+				}
+				sum += count * scoretable[i];
+			}
+			existStr.insert(pair<string, int>(s, sum));
+		}
+		
+
+		for (char ch = '0'; ch <= '2'; ch++) {
+			s += ch;
+			dfsStr(s);
+			s.pop_back();
+		}
 	}
 };
