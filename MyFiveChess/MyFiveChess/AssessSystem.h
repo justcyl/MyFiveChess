@@ -10,7 +10,7 @@ namespace AssessSystem {
 	int getRoleColor(char c);
 	void updateBoard(int x, char c);
 	char isRole(char x, char y);
-	int evaluatePos(int x, char c, char role);
+	int evaluatePos(int x, char c, char role, int ss);
 	int getValue(int x);
 	string getMap();
 

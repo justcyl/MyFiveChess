@@ -33,12 +33,13 @@ namespace UI {
 			if (value != pos.value) {
 				return value > pos.value;
 			}
-			if (x != pos.x) {
-				return x < pos.x;
+			else if (x != pos.x) {
+				return x > pos.x;
 			}
 			else {
-				return y < pos.y;
+				return y > pos.y;
 			}
+			
 		}
 
 	}Position;

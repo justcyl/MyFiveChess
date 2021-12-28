@@ -78,8 +78,21 @@ namespace AssessSystem {
 		if (s.size() < 5) return 0;
 
 		map<string, int>::iterator iter = existStr.find(s);
-		
-		return iter->second;
+		if (iter != existStr.end()) {
+			return iter->second;
+		}
+		int begin = -1;
+		int sum = 0;
+
+		for (int i = 0; i < 16; i++) {
+			int count = 0;
+			while ((begin = s.find(stringtable[i], begin + 1)) != string::npos) {
+				count++;
+			}
+			sum += count * scoretable[i];
+		}
+		existStr.insert(pair<string, int>(s, sum));
+		return sum;
 	}
 
 
@@ -94,7 +107,7 @@ namespace AssessSystem {
 		else return x == y ? '1' : '2';
 	}
 
-	int evaluatePos(int x, char t, char role) {
+	int evaluatePos(int x, char t, char role, int ss) {
 		int result = 0;
 
 		UI::Position p = UI::getPos(x);
@@ -105,16 +118,16 @@ namespace AssessSystem {
 		char oldC = Map[x];
 		Map[x] = t;
 
-		for (int i = max(0, p.x - 5); i < min(15, p.x + 6); i++) {
+		for (int i = max(0, p.x - ss); i <= min(14, p.x + ss); i++) {
 			l0[0].push_back(isRole(Map[i * 15 + p.y], role));
 		}
-		for (int j = max(0, p.y - 5); j < min(15, p.y + 6); j++) {
+		for (int j = max(0, p.y - ss); j <= min(14, p.y + ss); j++) {
 			l0[1].push_back(isRole(Map[p.x * 15 + j], role));
 		}
-		for (int i = p.x - min(min(p.x, p.y), 5), j = p.y - min(min(p.x, p.y), 5); i < min(15, p.x + 6) && j < min(15, p.y + 6); i++, j++) {
+		for (int i = p.x - min(min(p.x, p.y), ss), j = p.y - min(min(p.x, p.y), ss); i <= min(15, p.x + ss) && j <= min(14, p.y + ss); i++, j++) {
 			l0[2].push_back(isRole(Map[i * 15 + j], role));
 		}
-		for (int i = p.x + min(min(p.y, 15 - 1 - p.x), 5), j = p.y - min(min(p.y, 15 - 1 - p.x), 5); i >= max(0, p.x - 5) && j < min(15, p.y + 6); i--, j++) {
+		for (int i = p.x + min(min(p.y, 15 - 1 - p.x), ss), j = p.y - min(min(p.y, 15 - 1 - p.x), ss); i >= max(0, p.x - ss) && j <= min(14, p.y + ss); i--, j++) {
 			l0[3].push_back(isRole(Map[i * 15 + j], role));
 		}
 		for (int i = 0; i < 4; i++) {
@@ -126,17 +139,17 @@ namespace AssessSystem {
 	}
 
 	int getValue(int x) {
-		return evaluatePos(x, '1', '1') + evaluatePos(x, '2', '2');
+		return evaluatePos(x, '1', '1', 5) + evaluatePos(x, '2', '2', 5);
 	}
 
 	void updateBoard(int x, char ch) {
-		int t1 = evaluatePos(x, ch, '1');
-		allScore[0] += t1 - evaluatePos(x, Map[x], '1');
-		//lastScore[0][x] = evaluatePos(x, ch, UI::getAicolor()) - evaluatePos(x, Map[x], UI::getAicolor());
+		int t1 = evaluatePos(x, ch, '1', 15);
+		allScore[0] += t1 - evaluatePos(x, Map[x], '1', 15);
+		lastScore[0][x] = t1;
 
-		int t2 = evaluatePos(x, ch, '2');
-		allScore[1] += t2 - evaluatePos(x, Map[x], '2');
-		//lastScore[1][x] = t2;
+		int t2 = evaluatePos(x, ch, '2', 15);
+		allScore[1] += t2 - evaluatePos(x, Map[x], '2', 15);
+		lastScore[1][x] = t2;
 
 		Map[x] = ch;
 	}
